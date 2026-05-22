@@ -1,8 +1,10 @@
 #!/bin/bash
 $CONFDIR=/home/youruser/
 
+echo "Running xmodmap..." > /tmp/keymappings.log
+
 #place swap_keys.xmodmap at the same place in your system
-xmodmap $CONFDIR/custom/swap_keys.xmodmap
+xmodmap $CONFDIR/custom/swap_keys.xmodmap >> /tmp/keymappings.log 2>&1
 
 # Executa o autokey para carregar hotkeys programadas em segundo plano e redireciona a saída para /dev/null
 if ! pgrep -x "autokey" > /dev/null; then 
