@@ -1,4 +1,4 @@
-$DIRHOME=/home/youruser
+export DIRHOME=/home/youruser
 
 export PATH=$PATH:$DIRHOME/.local/bin
 export PATH=$PATH:$DIRHOME/apps/nvim-linux64/bin
