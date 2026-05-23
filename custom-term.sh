@@ -39,5 +39,110 @@ alias lkeys='source ~/custom/custom-startup.sh'
 #venv activation alias for python
 alias hmvenv="source .venv/bin/activate"
 
+#listening network ports served
+alias chkports="ss -tulp"
+
+#open files and network connections
+alias netwconn="lsof -i -P -n"
+
+#files and folders size
+alias fsize='du -sh "$1" 2>/dev/null | cut -f1'
+
+#output clipboard(initialize file with)
+alias glue='xsel --clipboard --output'
+
+#copy file content to clipboard 
+clip() {
+    if [ -z "$1" ]; then
+        echo "Usage: copy_file_to_clipboard <filename>"
+        return 1
+    fi
+    cat "$1" | xsel --clipboard
+}
+
+#Search files and folders by name
+search() {
+    local name="$1"
+    local type="${2:-b}"  # Default to 'b' (both)
+    local depth="${3:-}"
+    local depth_flag=""
+    local type_flag=""
+
+    if [ -n "$type" ] && [[ "$type" =~ ^[0-9]+$ ]]; then
+        depth="$type"
+    fi
+
+    case "$type" in
+        f) type_flag="-type f" ;;
+        d) type_flag="-type d" ;;
+        b) type_flag="" ;;
+        *) type_flag="" ;;
+    esac
+
+     # If depth is provided and is a number, use it as depth
+    if [ -n "$depth" ] && [[ "$depth" =~ ^[0-9]+$ ]]; then
+        depth_flag="-maxdepth $depth"
+    else
+	echo "Usage: search <name> [depth|type] [depth]"
+        echo "  Depth is a number"
+        return 1
+    fi
+
+    if [ -z "$name" ]; then
+        echo "Usage: search <name> [depth|type] [depth]"
+        echo "  type:  'f' for files, 'd' for directories, 'b' for both (default)"
+        echo "  depth: optional max depth (e.g., 1, 2). If none given, then recurses"
+        return 1
+    fi
+
+    find . $depth_flag $type_flag -iname "$name" -printf "%p [%y]\n"
+}
+
+#Search files and folders by regex
+searx() {
+    local regex="$1"
+    local type="${2:-b}"  # Default to 'b' (both)
+    local depth="${3:-}"
+    local depth_flag=""
+    local type_flag=""
+
+    if [ -n "$type" ] && [[ "$type" =~ ^[0-9]+$ ]]; then
+        depth="$type"
+    fi
+
+    case "$type" in
+        f) type_flag="-type f" ;;
+        d) type_flag="-type d" ;;
+        b) type_flag="" ;;
+        *) type_flag="" ;;
+    esac
+
+     # If depth is provided and is a number, use it as depth
+    if [ -n "$depth" ] && [[ "$depth" =~ ^[0-9]+$ ]]; then
+        depth_flag="-maxdepth $depth"
+    else
+	echo "Usage: search <regex> [depth|type] [depth]"
+        echo "  Depth is a number"
+        return 1
+    fi
+
+    if [ -z "$regex" ]; then
+        echo "Usage: searx <regex> [depth|type] [depth]"
+        echo "  type:  'f' for files, 'd' for directories, 'b' for both (default)"
+        echo "  depth: optional max depth (e.g., 1, 2). If none given, then recurses"
+        return 1
+    fi
+
+    find . $depth_flag $type_flag -regextype posix-extended -regex ".*$regex" -printf "%p [%y]\n"
+}
+
+pdfmg() {
+  output="${1:-final.pdf}"
+  find . -maxdepth 1 -type f -name "*.pdf" ! -name "$output" -print0 \
+    | sort -z \
+    | xargs -0 sh -c 'pdfunite "$@" "$0"' "$output"
+}
+
+
 
 eval "$(oh-my-posh init bash --config $DIRHOME/.cache/oh-my-posh/themes/atomicBit.omp.json)"
