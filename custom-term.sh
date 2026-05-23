@@ -48,16 +48,22 @@ alias netwconn="lsof -i -P -n"
 #files and folders size
 alias fsize='du -sh "$1" 2>/dev/null | cut -f1'
 
-#output clipboard(initialize file with)
-alias glue='xsel --clipboard --output'
-
 #copy file content to clipboard 
 clip() {
     if [ -z "$1" ]; then
-        echo "Usage: copy_file_to_clipboard <filename>"
+        echo "Usage: clip <filename>"
         return 1
     fi
     cat "$1" | xsel --clipboard
+}
+
+#output clipboard(initialize file with)
+glue() {
+    if [ -z "$1" ]; then
+        echo "Usage: glue <filename>"
+        return 1
+    fi
+    xsel --clipboard --output "$1"
 }
 
 #Search files and folders by name
