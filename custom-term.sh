@@ -12,6 +12,8 @@ if [ -d "$HOME/.local/bin" ] ; then
     PATH="$HOME/.local/bin:$PATH"
 fi
 
+export PATH=$PATH:/usr/local/go/bin
+
 # Define the alias for GitListTree
 alias gtl='git ls-tree HEAD --name-only'
 
@@ -45,8 +47,25 @@ alias chkports="ss -tulp"
 #open files and network connections
 alias netwconn="lsof -i -P -n"
 
+#delete files with given regex
+alias delreg='find . -type f -regextype posix-egrep -regex ".*\.tmp$" -delete'
+alias delregtest='find . -type f -regextype posix-egrep -regex ".*\.tmp$" -print'
+
+#system monitor
+alias sysmon='htop'
+
+#gpu monitor
+alias gpumon='nvtop'
+
 #files and folders size
-alias fsize='du -sh "$1" 2>/dev/null | cut -f1'
+fsize() {
+    if [ -z "$1" ]; then
+        echo "Usage: fsize <filename|folder>"
+        return 1
+    fi
+    output=$(du -sh "$1" 2>/dev/null)
+    echo "${output%%$'\t'*}"
+}
 
 #copy file content to clipboard 
 clip() {
@@ -127,7 +146,7 @@ searx() {
     if [ -n "$depth" ] && [[ "$depth" =~ ^[0-9]+$ ]]; then
         depth_flag="-maxdepth $depth"
     else
-	echo "Usage: search <regex> [depth|type] [depth]"
+	echo "Usage: searx <regex> [depth|type] [depth]"
         echo "  Depth is a number"
         return 1
     fi
@@ -139,7 +158,7 @@ searx() {
         return 1
     fi
 
-    find . $depth_flag $type_flag -regextype posix-extended -regex ".*$regex" -printf "%p [%y]\n"
+    find . $depth_flag $type_flag -regextype posix-extended -iregex ".*$regex" -printf "%p [%y]\n"
 }
 
 pdfmg() {
@@ -149,6 +168,71 @@ pdfmg() {
     | xargs -0 sh -c 'pdfunite "$@" "$0"' "$output"
 }
 
+# Count how many .<ext> files exist in <dir>
+cext() {
+    if [ -z "$1" ] || [ -z "$2" ]; then
+        echo "Usage: count_ext <dir> <ext>"
+        return 1
+    fi
+    if [ ! -d "$1" ]; then
+        echo "Error: '$1' is not a directory"
+        return 1
+    fi
+    ext="${2#.}"
+    find "$1" -type f -name "*.$ext" | wc -l
+}
 
+
+# Count how many .<ext> files exist in <dir>
+cext() {
+    if [ -z "$1" ] || [ -z "$2" ]; then
+        echo "Usage: cext <dir> <ext>"
+        return 1
+    fi
+    if [ ! -d "$1" ]; then
+        echo "Error: '$1' is not a directory"
+        return 1
+    fi
+    ext="${2#.}"
+    find "$1" -type f -name "*.$ext" | wc -l
+}
+
+#Outputs lines b to e from a file
+lines() {
+    local name="$1"
+    local b="${2:-}"  # Default to 'b' (both)
+    local e="${3:-}"
+    
+    if [ -z "$regex" ]; then
+        echo "Usage: lines <filename> [begin] [end]"
+        echo "  begin:  first line on the print range"
+        echo "  end: last line on the print range"
+        return 1
+    fi
+
+    if [ -n "$b" ] && [ -n "$e" ] && [[ "$b" =~ ^[0-9]+$ ]] && [[ "$e" =~ ^[0-9]+$ ]]; then
+        awk 'NR>=$b && NR<=$e' "$name"
+        return $?
+    fi
+    
+    if [ -n "$b" ] && [[ "$b" =~ ^[0-9]+$ ]]; then
+        awk 'NR>=$b' "$name"
+        return $?
+    fi
+    
+    if [ -n "$e" ] && [[ "$e" =~ ^[0-9]+$ ]]; then
+        awk 'NR<=$e' "$name"
+        return $?
+    fi
+    
+    cat "$name"
+}
+
+#concurrently runs a command
+conc() {
+    local n="${1:-5}"
+    local cmd="${2:-}"
+    seq $n | xargs -P $n -I{} sh -c "$cmd; echo"
+}
 
 eval "$(oh-my-posh init bash --config $DIRHOME/.cache/oh-my-posh/themes/atomicBit.omp.json)"
