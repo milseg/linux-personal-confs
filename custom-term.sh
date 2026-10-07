@@ -171,21 +171,6 @@ pdfmg() {
 # Count how many .<ext> files exist in <dir>
 cext() {
     if [ -z "$1" ] || [ -z "$2" ]; then
-        echo "Usage: count_ext <dir> <ext>"
-        return 1
-    fi
-    if [ ! -d "$1" ]; then
-        echo "Error: '$1' is not a directory"
-        return 1
-    fi
-    ext="${2#.}"
-    find "$1" -type f -name "*.$ext" | wc -l
-}
-
-
-# Count how many .<ext> files exist in <dir>
-cext() {
-    if [ -z "$1" ] || [ -z "$2" ]; then
         echo "Usage: cext <dir> <ext>"
         return 1
     fi
